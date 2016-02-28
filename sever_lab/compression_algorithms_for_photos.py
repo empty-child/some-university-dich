@@ -1,7 +1,8 @@
 import binascii
 
-f = open("1.txt", "rb")
+f = open("1.jpg", "rb")
 data = f.read()
+f.close()
 data = binascii.hexlify(data)
 data = data.decode('ascii')
 print(data)
@@ -27,3 +28,10 @@ def rle(data):
 
 out = rle(data)
 print(out)
+
+f = open("1.dat", "wb")
+data = out.encode("ascii")
+data = binascii.unhexlify(data)
+print(data)
+f.write(data)
+f.close()
