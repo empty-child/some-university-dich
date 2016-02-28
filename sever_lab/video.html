@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Привет от алоэ по имени Игорь</title>
+	</head>
+	<body>
+		<div id="ctrl">
+		<input type="file" id="path" accept="video/*">
+		<input type="button" value="Отправить" onclick="upload();">
+		</div><br/>
+		<canvas id="canvas" width="700" height="700"></canvas>
+		<video id="video" style="display:none;" autoplay></video>
+		<script>
+
+			var ctx,
+			canvas = document.getElementById('canvas'),
+			ctrl = document.getElementById("ctrl"), 
+			video = document.getElementById("video"), 
+			exist = 0,
+			SELECTED_MODE = 0,
+			cw = canvas.width,
+			ch = canvas.height;
+
+			if (canvas.getContext) {
+				ctx = canvas.getContext('2d');
+			}
+
+			/*
+				- Прокомментируйте, пожалуйста, сложившуюся ситуацию
+				- *grumpy cat face* Нет!
+			*/
+
+			function upload(){ // получаем путь к файлу, крепим его к тегу video и рендерим остаток интерфейса
+				var path = document.getElementById("path").value;
+				video.setAttribute('src',path);
+				if (exist==0){
+					ctrl=document.getElementById("ctrl");
+					ctrl.innerHTML+='<br/><input type="button" value="Негатив" onclick="arg_trans(1);">\
+					<input type="button" value="Оттенки серого" onclick="arg_trans(2);">\
+					<input type="button" value="Сепия" onclick="arg_trans(3);">\
+					<input type="button" value="Обычный" onclick="arg_trans(0);">';
+					exist=1;
+				}
+			}
+
+			video.addEventListener('play', function(){ // слушаем начало воспроизведения и переключаемся по режимам (здесь замешана магия и пони)
+						
+				switch (SELECTED_MODE)
+				{	
+					case 3:
+						sepia();
+						break;
+					case 2:
+						grayscale();
+						break;
+					case 1:
+						negative();
+						break;			
+					case 0:
+						render();
+						break;
+				};
+
+			},false);
+
+			function reloadMode() // одна из частей магии, перезагружает видео нафиг, иначе они устраивает одновременно форт боярд за твою озу 
+			{
+				video.pause();
+				var wait = setTimeout(function(){ 
+					video.play(); 
+				}, 5);
+			}
+
+			function arg_trans(arg){ // одна из голов гидры говнокодерства, выполняет проксирующую функцию, находится здесь, потому что я боюсь ее удалять
+				SELECTED_MODE=arg;
+				reloadMode();
+			}
+			
+			function render(){ // рендерит видео без эффектов
+				ctx.drawImage(video,0,0,cw,ch);
+				var videoData=ctx.getImageData(0,0,cw, ch);
+				ctx.putImageData(videoData,0,0);
+				if (video.paused || video.ended) { // еще один апофигей местной магии, проходите мимо, здесь не на что смотреть!
+					return;
+				}
+				setTimeout(function(){ render(); }, 0);
+			}
+			
+			function negative(){ // рендерит в негативе
+				ctx.drawImage(video,0,0,cw,ch);
+				var videoData=ctx.getImageData(0,0,cw, ch);
+				for (var i=0;i<videoData.data.length;i+=4)
+				  {
+					  videoData.data[i]=255-videoData.data[i];
+					  videoData.data[i+1]=255-videoData.data[i+1];
+					  videoData.data[i+2]=255-videoData.data[i+2];
+					  videoData.data[i+3]=255;
+				  }
+				ctx.putImageData(videoData,0,0);
+				if (video.paused || video.ended) {
+					return;
+				}
+				setTimeout(function(){ negative(); }, 0);
+			}
+			
+			function sepia(){ // ... в сепии
+				ctx.drawImage(video,0,0,cw,ch);
+				var videoData=ctx.getImageData(0,0,cw,ch);
+				var avg=0;
+				for (var i=0;i<videoData.data.length;i+=4)
+				  {
+					  avg = (videoData.data[i] + videoData.data[i + 1] + videoData.data[i + 2]) / 3;
+					  videoData.data[i]=avg;
+					  videoData.data[i+1]=avg*0.71;
+					  videoData.data[i+2]=avg*0.41;
+					  videoData.data[i+3]=255;
+				  }
+				ctx.putImageData(videoData,0,0);
+				if (video.paused || video.ended) {
+					return;
+				}
+				setTimeout(function(){ sepia(); }, 0);
+			}
+			
+			function grayscale(){ // ... в 50 оттенков говеного кинца
+				ctx.drawImage(video,0,0,cw,ch);
+				var videoData=ctx.getImageData(0,0,cw,ch);
+				var avg=0;
+				for (var i=0;i<videoData.data.length;i+=4)
+				  {
+					  avg = (videoData.data[i] + videoData.data[i + 1] + videoData.data[i + 2]) / 3;
+					  videoData.data[i]=avg;
+					  videoData.data[i+1]=avg;
+					  videoData.data[i+2]=avg;
+					  videoData.data[i+3]=255;
+				  }
+				ctx.putImageData(videoData,0,0);
+				if (video.paused || video.ended) {
+					return;
+				}
+				setTimeout(function(){ grayscale(); }, 0);
+			}
+					
+		</script>
+	</body>
+</html>

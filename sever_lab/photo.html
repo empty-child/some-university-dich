@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Привет от алоэ по имени Игорь</title>
+	</head>
+	<body>
+		<div id="ctrl">
+		<input type="file" id="path" accept="image/*">
+		<input type="button" value="Отправить" onclick="upload();"></div><br/>
+		<canvas id="canvas" width="700" height="700"></canvas>
+		<script>
+			var canvas = document.getElementById('canvas');
+			var ctx, img, ctrl, exist=0;
+			if (canvas.getContext) {
+				ctx = canvas.getContext('2d');
+			}
+			function upload(){
+				img = new Image();
+				img.src = document.getElementById("path").value;
+				ctx.drawImage(img,0,0,700,700);
+				if (exist==0){
+					ctrl=document.getElementById("ctrl");
+					ctrl.innerHTML+='<br/><input type="button" value="Негатив" onclick="negative();">\
+					<input type="button" value="Оттенки серого" onclick="grayscale();">\
+					<input type="button" value="Сепия" onclick="sepia();">';
+					exist=1;
+				}
+			}
+			function negative(){
+				ctx.drawImage(img,0,0,700,700);
+				var imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+				for (var i=0;i<imgData.data.length;i+=4)
+				  {
+					  imgData.data[i]=255-imgData.data[i];
+					  imgData.data[i+1]=255-imgData.data[i+1];
+					  imgData.data[i+2]=255-imgData.data[i+2];
+					  imgData.data[i+3]=255;
+				  }
+				ctx.putImageData(imgData,0,0);
+			}
+			
+			function sepia(){
+				ctx.drawImage(img,0,0,700,700);
+				var imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+				var avg=0;
+				for (var i=0;i<imgData.data.length;i+=4)
+				  {
+					  avg = (imgData.data[i] + imgData.data[i + 1] + imgData.data[i + 2]) / 3;
+					  imgData.data[i]=avg;
+					  imgData.data[i+1]=avg*0.71;
+					  imgData.data[i+2]=avg*0.41;
+					  imgData.data[i+3]=255;
+				  }
+				ctx.putImageData(imgData,0,0);
+			}
+			
+			function grayscale(){
+				ctx.drawImage(img,0,0,700,700);
+				var imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+				var avg=0;
+				for (var i=0;i<imgData.data.length;i+=4)
+				  {
+					  avg = (imgData.data[i] + imgData.data[i + 1] + imgData.data[i + 2]) / 3;
+					  imgData.data[i]=avg;
+					  imgData.data[i+1]=avg;
+					  imgData.data[i+2]=avg;
+					  imgData.data[i+3]=255;
+				  }
+				ctx.putImageData(imgData,0,0);
+			}
+		</script>
+	</body>
+</html>
