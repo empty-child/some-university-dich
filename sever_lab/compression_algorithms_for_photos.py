@@ -1,14 +1,15 @@
 import binascii
+import collections
+from heapq import heappush, heappop, heapify
 
-f = open("1.jpg", "rb")
-data = f.read()
-f.close()
+with open("1.jpg", "rb") as f:
+    data = f.read()
 data = binascii.hexlify(data)
 data = data.decode('ascii')
 print(data)
 
 
-def rle(data):
+def rle():
     i, j = 0, 1
     prev = ""
     output = ""
@@ -26,12 +27,33 @@ def rle(data):
         output += str(j)
     return output
 
-out = rle(data)
+
+def huffman():
+
+    def encode(symb2freq):
+        heap = [[wt, [sym, ""]] for sym, wt in symb2freq.items()]
+        heapify(heap)
+        while len(heap) > 1:
+            lo = heappop(heap)
+            hi = heappop(heap)
+            for pair in lo[1:]:
+                pair[1] = '0' + pair[1]
+            for pair in hi[1:]:
+                pair[1] = '1' + pair[1]
+            heappush(heap, [lo[0] + hi[0]] + lo[1:] + hi[1:])
+        return sorted(heappop(heap)[1:])
+    cnt = collections.Counter(data)
+    huffman_codes = dict(encode(cnt))
+    output = ""
+    for i in data:
+        output += huffman_codes[i]
+    return output
+
+out = huffman()
 print(out)
 
-f = open("1.dat", "wb")
-data = out.encode("ascii")
-data = binascii.unhexlify(data)
-print(data)
-f.write(data)
-f.close()
+with open("1.dat", "wb") as f:
+    data = out.encode("utf-8")
+    data = binascii.unhexlify(data)
+    # print(data)
+    f.write(out) # не преобразует хаффмана, надо доделать
