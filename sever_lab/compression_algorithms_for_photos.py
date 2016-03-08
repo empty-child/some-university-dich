@@ -2,7 +2,7 @@ import binascii
 import collections
 from heapq import heappush, heappop, heapify
 
-with open("1.jpg", "rb") as f:
+with open("2.jpg", "rb") as f:
     data = f.read()
 data = binascii.hexlify(data)
 data = data.decode('ascii')
@@ -49,11 +49,33 @@ def huffman():
         output += huffman_codes[i]
     return output
 
-out = huffman()
-print(out)
 
-with open("1.dat", "wb") as f:
-    data = out.encode("utf-8")
-    data = binascii.unhexlify(data)
-    # print(data)
-    f.write(out) # не преобразует хаффмана, надо доделать
+def lzw():
+    charlist = []
+    output = []
+    for i in data:
+        if i not in charlist:
+            charlist.append(i)
+    charlist.sort()
+    w = ""
+    for i in data:
+        wi = w + i
+        if wi in charlist:
+            w = wi
+        else:
+            charlist.append(wi)
+            output.append(charlist.index(w))
+            w = i
+    if w:
+        output.append(charlist.index(w))
+    print(charlist)
+    return output
+
+out = lzw()
+print(out)
+#
+# with open("1.dat", "wb") as f:
+#     data = out.encode("utf-8")
+#     data = binascii.unhexlify(data)
+#     # print(data)
+#     f.write(out) # не преобразует хаффмана, надо доделать
