@@ -1,15 +1,18 @@
 import binascii
 import collections
+import time
+from bs4 import BeautifulSoup
 from heapq import heappush, heappop, heapify
 
 with open("2.jpg", "rb") as f:
     data = f.read()
 data = binascii.hexlify(data)
 data = data.decode('ascii')
-print(data)
+print("Input sequence: " + data)
 
 
 def rle():
+    t1 = time.clock()
     i, j = 0, 1
     prev = ""
     output = ""
@@ -25,10 +28,13 @@ def rle():
         i += 1
     if j >= 1:
         output += str(j)
-    return output
+    t2 = time.clock()
+    print("RLE output sequence: " + output)
+    return t2-t1
 
 
 def huffman():
+    t1 = time.clock()
 
     def encode(symb2freq):
         heap = [[wt, [sym, ""]] for sym, wt in symb2freq.items()]
@@ -47,10 +53,13 @@ def huffman():
     output = ""
     for i in data:
         output += huffman_codes[i]
-    return output
+    t2 = time.clock()
+    print("Huffman output sequence: " + output)
+    return t2-t1
 
 
 def lzw():
+    t1 = time.clock()
     charlist = []
     output = []
     for i in data:
@@ -68,12 +77,27 @@ def lzw():
             w = i
     if w:
         output.append(charlist.index(w))
-    print(charlist)
-    return output
+    print("LZW output sequence: " + str(output))
+    t2 = time.clock()
+    return t2-t1
 
-out = lzw()
-print(out)
-#
+tr = round(rle(),4)
+th = round(huffman(),4)
+tl = round(lzw(),4)
+
+with open("out.html", "rb") as f:
+    html = f.read()
+
+soup = BeautifulSoup(html, "lxml")
+for el in [["rle", tr],["hfm", th],["lzw", tl]]:
+    elem = soup.find(attrs={"id": el[0]})
+    elem.contents.clear()
+    elem.insert(0, str(el[1]))
+
+with open("out.html", "wb") as f:
+    html = soup.encode("utf-8")
+    f.write(html)
+
 # with open("1.dat", "wb") as f:
 #     data = out.encode("utf-8")
 #     data = binascii.unhexlify(data)
