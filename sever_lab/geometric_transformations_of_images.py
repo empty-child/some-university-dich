@@ -23,7 +23,6 @@ def pow_trans(img, gamma=1):
     table = np.array([((i / 255.0) ** invGamma) * 255 for i in np.arange(0, 256)]).astype("uint8")
     return cv.LUT(img, table)
 
-
 img = cv.imread("1.jpg")
 rows, columns = img.shape[:2]
 # img = cv.cvtColor(img, cv.COLOR_RGB2HSV)
