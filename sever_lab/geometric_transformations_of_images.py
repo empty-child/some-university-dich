@@ -31,7 +31,6 @@ def convolution(matr, img):
     return out_img
 
 
-
 def log_trans(img):
     table = np.array([((math.log10(1+i/255))*850) for i in np.arange(0, 256)]).astype("uint8")
     return cv.LUT(img, table)
