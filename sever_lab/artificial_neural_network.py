@@ -1,5 +1,3 @@
-import random
-import math
 import numpy as np
 
 class Neuralnetwork:
@@ -7,28 +5,44 @@ class Neuralnetwork:
         self.inputLayerSize = 2
         self.outputLayerSize = 1
         self.hiddenLayerSize = 3
-        self.W1 = random.randint(self.inputLayerSize, self.hiddenLayerSize)
-        self.W2 = random.randint(self.outputLayerSize, self.hiddenLayerSize)
+        self.W1 = 2 * np.random.random((2, 3)) - 1
+        self.W2 = 2 * np.random.random((3, 1)) - 1
+        self.la1 = None
+        self.la2 = None
+        self.la3 = None
 
     def forward(self, X):
-        z2 = np.dot(X, self.W1)
-        a2 = self.sigmoid(z2)
-        z3 = np.dot(a2, self.W2)
-        yH = self.sigmoid(z3)
-        return yH
+        self.la1 = X
+        self.la2 = self.sigmoid(np.dot(self.la1, self.W1))
+        self.la3 = self.sigmoid(np.dot(self.la2, self.W2))
+        return self.la3
 
-    def sigmoid(self, z):
-        temp2 = [[1/(1+math.exp(-z3)) for z3 in z2] for z2 in z]
-        # temp = 1/(1+math.exp(-z))
-        # print(temp)
-        return temp2
+    def sigmoid(self, z, derivative=False):
+        if derivative is True:
+            return (1 / (1 + np.exp(-z)))*(1-(1 / (1 + np.exp(-z))))
+        return 1 / (1 + np.exp(-z))
 
     def backpropagation(self, X, out):
-        temp2 = [[(out2-x3)*(math.exp(y)/(math.exp(y)**2-2*math.exp(y)+1)) for x3 in x2] for x2 in X for out2 in out]
+        la2_error = out - X
+        la2_delta = la2_error * self.sigmoid(X, True)
+        la1_error = la2_delta.dot(self.W2.T)
+        la1_delta = la1_error * self.sigmoid(self.la2, True)
+        self.W2 += self.la2.T.dot(la2_delta)
+        self.W1 += self.la1.T.dot(la1_delta)
+        return str(np.mean(np.abs(la2_error)))
+
 
 n1 = Neuralnetwork()
-temp = n1.forward([[3, 5, 10],
-                    [5, 1, 2]])
-# output = n1.forward([3, 5, 10])
-output = n1.backpropagation(temp, [0.75, 0.82, 0.93])
-print(output)
+for i in range(1000):
+    learn_data = n1.forward(np.array([[3, 5],
+                                      [5, 1],
+                                      [10, 2]]))
+    output = n1.backpropagation(learn_data, np.array([[0.75],
+                                                      [0.82],
+                                                      [0.93]]))
+    if i % 50 is 0:
+        print(output)
+
+final_data = n1.forward(np.array([8, 3]))
+print(final_data)
+
