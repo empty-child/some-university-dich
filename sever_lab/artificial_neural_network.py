@@ -2,11 +2,8 @@ import numpy as np
 
 class Neuralnetwork:
     def __init__(self):
-        self.inputLayerSize = 2
-        self.outputLayerSize = 1
-        self.hiddenLayerSize = 3
-        self.W1 = 2 * np.random.random((2, 3)) - 1
-        self.W2 = 2 * np.random.random((3, 1)) - 1
+        self.W1 = np.random.random((2, 3))
+        self.W2 = np.random.random((3, 1))
         self.la1 = None
         self.la2 = None
         self.la3 = None
@@ -25,15 +22,15 @@ class Neuralnetwork:
     def backpropagation(self, X, out):
         la2_error = out - X
         la2_delta = la2_error * self.sigmoid(X, True)
-        la1_error = la2_delta.dot(self.W2.T)
+        la1_error = np.dot(la2_delta, self.W2.T)
         la1_delta = la1_error * self.sigmoid(self.la2, True)
-        self.W2 += self.la2.T.dot(la2_delta)
-        self.W1 += self.la1.T.dot(la1_delta)
+        self.W2 += np.dot(self.la2.T, la2_delta)
+        self.W1 += np.dot(self.la1.T, la1_delta)
         return str(np.mean(np.abs(la2_error)))
 
 
 n1 = Neuralnetwork()
-for i in range(1000):
+for i in range(500):
     learn_data = n1.forward(np.array([[3, 5],
                                       [5, 1],
                                       [10, 2]]))
