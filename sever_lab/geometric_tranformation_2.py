@@ -1,5 +1,4 @@
 import cv2 as cv
-import math
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -12,6 +11,8 @@ log_mask = np.array([[0, 0, 3, 2, 2, 2, 3, 0, 0],
                      [3, 3, 5, 3, 0, 3, 5, 3, 3],
                      [0, 2, 3, 5, 5, 5, 3, 2, 0],
                      [0, 0, 3, 2, 2, 2, 3, 0, 0]], "i")
+
+graycolors = [25, 51, 76, 102, 128, 166, 191, 229]
 
 
 def convolution_from_grayscale(matr, img):
@@ -34,35 +35,75 @@ def convolution_from_grayscale(matr, img):
     return out_img
 
 
-def segmentaion(img):
-    rows, columns = img.shape[:2]
-    out_img = np.zeros([rows, columns], dtype="uint8")
-    for i in range(columns):
-        for j in range(rows):
-            floodFill4(i,j,155,0, out_img)
+def floodfilling(img):
+    cnt = 0
+    out_img = np.copy(img)
+    rows, columns = out_img.shape[:2]
+    for x in range(rows)[4:rows-4]:
+        for y in range(columns)[4:columns-4]:
+            if out_img[x,y] == 0:
+                if cnt < len(graycolors)-1:
+                    cnt += 1
+                else:
+                    cnt = 0
+                out_img = FloodFill(out_img, [x, y], 0, graycolors[cnt])
     return out_img
 
 
-def floodFill4(x, y, newColor, oldColor, out_img):
-    if x >= 0 and x < columns and y >= 0 and y < rows-1 and out_img[x][y] == oldColor and out_img[x][y] != newColor:
-        out_img[x][y] = newColor
+def FloodFill( img, initNode, targetColor, replaceColor ):
+    # initNode - координаты начала работы алгоритма в виде [x, y]
+    xsize, ysize = img.shape[:2]
+    Q = []
+    if img[ initNode[0], initNode[1] ] != targetColor:
+        return img
+    Q.append( initNode )
+    while Q != []:
+        node = Q.pop(0)
+        if img[ node[0], node[1] ] == targetColor:
+            W = list( node )
+        if node[0] + 1 < xsize:
+            E = list( [ node[0] + 1, node[1] ] )
+        else:
+            E = list( node )
+        while img[ W[0], W[1] ] == targetColor:
+            img[ W[0], W[1] ] = replaceColor
+            if W[1] + 1 < ysize:
+                if img[ W[0], W[1] + 1 ] == targetColor:
+                    Q.append( [ W[0], W[1] + 1 ] )
+            if W[1] - 1 >= 0:
+                if img[ W[0], W[1] - 1 ] == targetColor:
+                    Q.append( [ W[0], W[1] - 1 ] )
+            if W[0] - 1 >= 0:
+                W[0] = W[0] - 1
+            else:
+                break
+        while img[ E[0], E[1] ] == targetColor:
+            img[ E[0], E[1] ] = replaceColor
+            if E[1] + 1 < ysize:
+                if img[ E[0], E[1] + 1 ] == targetColor:
+                    Q.append( [ E[0], E[1] + 1 ] )
+            if E[1] - 1 >= 0:
+                if img[ E[0], E[1] - 1 ] == targetColor:
+                    Q.append( [ E[0], E[1] -1 ] )
+            if E[0] + 1 < xsize:
+                E[0] = E[0] + 1
+            else:
+                break
+    return img
 
-        floodFill4(x + 1, y, newColor, oldColor, out_img)
-        floodFill4(x - 1, y, newColor, oldColor, out_img)
-        floodFill4(x, y + 1, newColor, oldColor, out_img)
-        floodFill4(x, y - 1, newColor, oldColor, out_img)
 
 
-
-img = cv.imread("4.jpg")
+img = cv.imread("1.jpg")
 rows, columns = img.shape[:2]
 img2 = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
 img2 = convolution_from_grayscale(log_mask, img2)
-img3 = segmentaion(img2)
+img3 = floodfilling(img2)
 cv.imshow("img", img3)
 cv.waitKey()
-# plt.subplot(1,2,1),plt.imshow(img)
+# plt.subplot(1,3,1),plt.imshow(img)
 # plt.title('Original'), plt.xticks([]), plt.yticks([])
-# plt.subplot(1,2,2),plt.imshow(img2)
+# plt.subplot(1,3,2),plt.imshow(img2)
 # plt.title('Marr-Hildreth Algorithm'), plt.xticks([]), plt.yticks([])
+# plt.subplot(1,3,3),plt.imshow(img3)
+# plt.title('Segmentation'), plt.xticks([]), plt.yticks([])
 # plt.show()
